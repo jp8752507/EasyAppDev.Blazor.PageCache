@@ -1,0 +1,107 @@
+@page "/interactive-prerender"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@attribute [PageCache(Duration = 60, CacheForAuthenticatedUsers = true)]
+@using EasyAppDev.Blazor.PageCache.Attributes
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>Interactive with Prerender Control</PageTitle>
+
+<h1>Interactive Server (Prerender = false)</h1>
+
+<div class="alert alert-success">
+    <strong>Configuration:</strong> InteractiveServer with prerender: false<br/>
+    <strong>Cache Duration:</strong> 60 seconds<br/>
+    <strong>Expected Behavior:</strong> This page should NOT cache properly because it skips prerendering
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Render Information</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Rendered At:</strong> @renderTime</p>
+        <p><strong>Random Value:</strong> @randomValue</p>
+        <p><strong>Counter:</strong> @currentCount</p>
+        <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    </div>
+</div>
+
+<div class="card mt-4 bg-warning">
+    <div class="card-header">
+        <h3>⚠️ The Issue with Interactive Server + Caching</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Problem:</strong> When rendermode InteractiveServer is used:</p>
+        <ol>
+            <li>Initial HTML is cached (works via curl)</li>
+            <li>Browser loads the cached HTML</li>
+            <li>Blazor establishes SignalR connection</li>
+            <li><strong>Component re-renders via SignalR</strong></li>
+            <li>OnInitialized runs AGAIN</li>
+            <li>New timestamp/random values are generated</li>
+            <li>Cached values are overwritten!</li>
+        </ol>
+
+        <p class="mt-3"><strong>Why curl works but browser doesn't:</strong></p>
+        <ul>
+            <li>curl gets the cached HTML and stops</li>
+            <li>Browser gets cached HTML but then SignalR re-renders it</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h3>✅ The Solution</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>For pages that should be cached, you have two options:</strong></p>
+
+        <h5>Option 1: Use Static SSR (Recommended)</h5>
+        <pre><code>@@page "/about"
+@@attribute [PageCache(Duration = 3600)]
+@* No rendermode directive *@
+
+&lt;h1&gt;About Us&lt;/h1&gt;
+&lt;p&gt;Fully cached static content&lt;/p&gt;</code></pre>
+
+        <h5 class="mt-3">Option 2: Mixed Approach</h5>
+        <pre><code>@@page "/products"
+@@attribute [PageCache(Duration = 3600)]
+@* Page wrapper is static *@
+
+&lt;h1&gt;Products&lt;/h1&gt;
+&lt;div&gt;Cached product list...&lt;/div&gt;
+
+@* Only make specific components interactive *@
+&lt;ProductFilter @@rendermode="InteractiveServer" /&gt;</code></pre>
+
+        <h5 class="mt-3">❌ Not Recommended: Interactive Server + Cache</h5>
+        <pre><code>@@page "/products"
+@@rendermode InteractiveServer  @* ← Breaks caching *@
+@@attribute [PageCache(Duration = 3600)]
+
+@* Component will re-render after cache is loaded *@</code></pre>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+</div>
+
+@code {
+    private int currentCount = 0;
+    private string renderTime = string.Empty;
+    private string randomValue = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        renderTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+        randomValue = Guid.NewGuid().ToString("N")[..8];
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

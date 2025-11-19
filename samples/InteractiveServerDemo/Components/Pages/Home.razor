@@ -1,0 +1,107 @@
+﻿@page "/"
+
+<PageTitle>Interactive Server Cache Test</PageTitle>
+
+<h1>Interactive Server Cache Testing</h1>
+
+<div class="alert alert-primary">
+    <h4>Welcome to the Page Cache Test App!</h4>
+    <p>This app demonstrates page caching with Blazor Interactive Server mode.</p>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5>✓ Static Cached Page</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Type:</strong> Static SSR (No interactivity)</p>
+                <p><strong>Caching:</strong> Full HTML caching</p>
+                <p><strong>Performance:</strong> Maximum benefit</p>
+                <ul>
+                    <li>Initial render cached</li>
+                    <li>No SignalR connection needed</li>
+                    <li>Fastest possible load time</li>
+                </ul>
+                <a href="/static-cached" class="btn btn-success">Test Static Cache</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5>⚡ Interactive Cached Page</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Type:</strong> Interactive Server</p>
+                <p><strong>Caching:</strong> Initial HTML only</p>
+                <p><strong>Performance:</strong> Partial benefit</p>
+                <ul>
+                    <li>Initial render cached</li>
+                    <li>SignalR for interactivity</li>
+                    <li>Fast initial load + full features</li>
+                </ul>
+                <a href="/interactive-cached" class="btn btn-warning">Test Interactive Cache</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h5>📊 Cache Statistics Dashboard</h5>
+    </div>
+    <div class="card-body">
+        <p>Monitor cache performance in real-time:</p>
+        <ul>
+            <li>View hit rate and cache statistics</li>
+            <li>See all cached routes</li>
+            <li>Clear individual or all cache entries</li>
+        </ul>
+        <a href="/cache-stats" class="btn btn-info">View Cache Stats</a>
+    </div>
+</div>
+
+<div class="card mt-4 bg-light">
+    <div class="card-header">
+        <h5>🧪 How to Test</h5>
+    </div>
+    <div class="card-body">
+        <ol>
+            <li><strong>Visit Static Cached page</strong> - Note the timestamp</li>
+            <li><strong>Refresh multiple times</strong> - Timestamp stays the same (cached!)</li>
+            <li><strong>Visit Interactive Cached page</strong> - Click buttons to test interactivity</li>
+            <li><strong>Refresh the interactive page</strong> - Initial HTML cached, but counter resets</li>
+            <li><strong>Check Cache Stats</strong> - See hit rate improving as you navigate</li>
+            <li><strong>Open Dev Tools</strong> - Look for <code>X-Page-Cache</code> response header</li>
+        </ol>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Key Takeaways</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-success">✓ What Gets Cached</h6>
+                <ul>
+                    <li>Initial HTML response</li>
+                    <li>Server-rendered content</li>
+                    <li>Static page structure</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-danger">✗ What Doesn't Get Cached</h6>
+                <ul>
+                    <li>SignalR interactions</li>
+                    <li>Component state</li>
+                    <li>Real-time updates</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

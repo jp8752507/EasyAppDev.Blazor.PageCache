@@ -1,0 +1,120 @@
+@page "/interactive-cached"
+@rendermode InteractiveServer
+@attribute [PageCache(Duration = 60, CacheForAuthenticatedUsers = true)]
+@using EasyAppDev.Blazor.PageCache.Attributes
+
+<PageTitle>Interactive Cached Page</PageTitle>
+
+<h1>Interactive Server Cached Page</h1>
+
+<div class="alert alert-danger">
+    <strong>⚠️ IMPORTANT:</strong> This page demonstrates why caching doesn't work properly with Interactive Server!<br/>
+    <strong>Page Type:</strong> Interactive Server (rendermode InteractiveServer)<br/>
+    <strong>Cache Duration:</strong> 60 seconds<br/>
+    <strong>What Happens:</strong> HTML is cached BUT component re-renders after SignalR connects!
+</div>
+
+<div class="alert alert-warning">
+    <strong>Why values keep changing in browser:</strong><br/>
+    1. Initial HTML cached ✅<br/>
+    2. Browser loads cached HTML ✅<br/>
+    3. Blazor establishes SignalR connection ⚠️<br/>
+    4. Component OnInitialized runs AGAIN ❌<br/>
+    5. New timestamp/random values generated ❌<br/>
+    <br/>
+    <strong>curl shows caching works, but browser re-renders the component!</strong>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Initial Render Information (Cached)</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Page Rendered At:</strong> @initialRenderTime</p>
+        <p><strong>Random Value:</strong> @randomValue</p>
+        <p class="text-info"><strong>ℹ These values are cached and will be the same on refresh!</strong></p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Interactive Elements (NOT Cached)</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Current Counter:</strong> @currentCount</p>
+        <button class="btn btn-primary" @onclick="IncrementCount">
+            Click me (via SignalR)
+        </button>
+        <p class="text-warning mt-2">
+            <strong>⚠ Button clicks happen via SignalR</strong> - not cached!
+        </p>
+
+        <hr />
+
+        <p><strong>Last Click Time:</strong> @lastClickTime</p>
+        <p class="text-muted small">
+            Notice: The last click time updates in real-time through SignalR,
+            but the page render time above stays the same (from cache).
+        </p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>How This Works</h3>
+    </div>
+    <div class="card-body">
+        <ul>
+            <li><strong>First Request:</strong> Page renders, initial HTML is cached</li>
+            <li><strong>Subsequent Requests:</strong> Cached HTML loads fast (2-5ms)</li>
+            <li><strong>After HTML Loads:</strong> Blazor establishes SignalR connection</li>
+            <li><strong>Button Clicks:</strong> Go through SignalR (not cached)</li>
+            <li><strong>Benefit:</strong> Faster initial page load, but interactivity works normally</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card mt-4 bg-light">
+    <div class="card-header">
+        <h3>Testing Instructions</h3>
+    </div>
+    <div class="card-body">
+        <ol>
+            <li>Note the "Page Rendered At" timestamp above</li>
+            <li>Click the button a few times (counter increments)</li>
+            <li><strong>Refresh the page (F5)</strong></li>
+            <li>Observe:
+                <ul>
+                    <li>✓ "Page Rendered At" is the SAME (cached!)</li>
+                    <li>✓ Random value is the SAME (cached!)</li>
+                    <li>✗ Counter resets to 0 (state not persisted)</li>
+                    <li>✓ You can click button again (SignalR connected)</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+    <button class="btn btn-secondary" onclick="location.reload()">Refresh Page</button>
+</div>
+
+@code {
+    private int currentCount = 0;
+    private string initialRenderTime = string.Empty;
+    private string randomValue = string.Empty;
+    private string lastClickTime = "Never";
+
+    protected override void OnInitialized()
+    {
+        initialRenderTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+        randomValue = Guid.NewGuid().ToString("N")[..8];
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+        lastClickTime = DateTime.Now.ToString("HH:mm:ss.fff");
+    }
+}

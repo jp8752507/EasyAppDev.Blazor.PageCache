@@ -1,0 +1,153 @@
+﻿@page "/"
+
+<PageTitle>EasyAppDev.Blazor.PageCache Demo</PageTitle>
+
+<h1>EasyAppDev.Blazor.PageCache Demo</h1>
+
+<div class="alert alert-primary">
+    <h4>Welcome to the Page Cache Demo!</h4>
+    <p>This application demonstrates all features of the EasyAppDev.Blazor.PageCache library.</p>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>Simple Caching</h5>
+            </div>
+            <div class="card-body">
+                <p>Learn how to cache pages with a simple attribute.</p>
+                <ul>
+                    <li>Basic [PageCache] attribute</li>
+                    <li>Custom cache duration</li>
+                    <li>View cached timestamps</li>
+                </ul>
+                <a href="/simple-cached" class="btn btn-primary">Try It</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5>Vary By Query Parameters</h5>
+            </div>
+            <div class="card-body">
+                <p>Create separate cache entries for different query parameters.</p>
+                <ul>
+                    <li>VaryByQueryKeys configuration</li>
+                    <li>Multiple cache entries</li>
+                    <li>Ignored parameters (UTM, etc.)</li>
+                </ul>
+                <a href="/vary-by-query" class="btn btn-success">Try It</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5>Tag-Based Invalidation</h5>
+            </div>
+            <div class="card-body">
+                <p>Group and invalidate related pages using tags.</p>
+                <ul>
+                    <li>Assign tags to pages</li>
+                    <li>Bulk invalidation</li>
+                    <li>Perfect for catalogs</li>
+                </ul>
+                <a href="/tagged-pages" class="btn btn-warning">Try It</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5>Advanced Features</h5>
+            </div>
+            <div class="card-body">
+                <p>Explore advanced caching capabilities.</p>
+                <ul>
+                    <li>Vary by header</li>
+                    <li>Cache stampede prevention</li>
+                    <li>Performance metrics</li>
+                </ul>
+                <a href="/advanced-features" class="btn btn-info">Try It</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4 bg-light">
+    <div class="card-header">
+        <h5>Cache Administration</h5>
+    </div>
+    <div class="card-body">
+        <p>Monitor cache statistics and manage cached entries in real-time.</p>
+        <ul>
+            <li>View hit rate and statistics</li>
+            <li>See all cached routes</li>
+            <li>Invalidate by route, pattern, or tag</li>
+            <li>Clear entire cache</li>
+        </ul>
+        <a href="/cache-admin" class="btn btn-dark">Go to Cache Admin</a>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Quick Start</h5>
+    </div>
+    <div class="card-body">
+        <h6>1. Install the Package</h6>
+        <pre><code>dotnet add package EasyAppDev.Blazor.PageCache</code></pre>
+
+        <h6 class="mt-3">2. Configure in Program.cs</h6>
+        <pre><code>builder.Services.AddPageCache(options =>
+{
+    options.DefaultDurationSeconds = 300;
+    options.EnableStatistics = true;
+});
+
+app.MapRazorComponents&lt;App&gt;()
+    .AddPageCacheFilter();</code></pre>
+
+        <h6 class="mt-3">3. Add to Your Pages</h6>
+        <pre><code>@@page "/about"
+@@attribute [PageCache(Duration = 3600)]
+
+&lt;h1&gt;About Us&lt;/h1&gt;
+&lt;p&gt;This page is cached!&lt;/p&gt;</code></pre>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h3>Features Overview</h3>
+    <div class="row">
+        <div class="col-md-4">
+            <h5>Performance</h5>
+            <ul>
+                <li>20-50x faster page loads</li>
+                <li>2-5ms response time</li>
+                <li>Built-in request coalescing</li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h5>Flexibility</h5>
+            <ul>
+                <li>Vary by query, header, culture</li>
+                <li>Tag-based grouping</li>
+                <li>Pattern matching</li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h5>Management</h5>
+            <ul>
+                <li>Real-time statistics</li>
+                <li>Multiple invalidation methods</li>
+                <li>Memory limits</li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,228 @@
+@page "/cache-admin"
+@rendermode InteractiveServer
+@inject IServiceProvider ServiceProvider
+@using EasyAppDev.Blazor.PageCache.Extensions
+@using EasyAppDev.Blazor.PageCache.Services
+@using EasyAppDev.Blazor.PageCache.Diagnostics
+
+<PageTitle>Cache Administration</PageTitle>
+
+<h1>Cache Administration</h1>
+
+<div class="alert alert-warning">
+    <strong>Note:</strong> This page is NOT cached to show real-time cache statistics.
+</div>
+
+@if (stats != null)
+{
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Hit Rate</h5>
+                    <h2 class="text-primary">@stats.HitRate.ToString("P2")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Requests</h5>
+                    <h2 class="text-info">@stats.TotalRequests.ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Cache Entries</h5>
+                    <h2 class="text-success">@stats.CachedEntries.ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Cache Size</h5>
+                    <h2 class="text-warning">@stats.CacheSizeMB.ToString("F2") MB</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>Detailed Statistics</h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>Cache Hits</th>
+                        <td>@stats.HitCount.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <th>Cache Misses</th>
+                        <td>@stats.MissCount.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <th>Evictions</th>
+                        <td>@stats.EvictionCount.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <th>Average Page Size</th>
+                        <td>@stats.AveragePageSizeBytes.ToString("F0") bytes</td>
+                    </tr>
+                    <tr>
+                        <th>Requests/Second</th>
+                        <td>@stats.RequestsPerSecond.ToString("F2")</td>
+                    </tr>
+                    <tr>
+                        <th>Uptime</th>
+                        <td>@stats.Duration.ToString(@"hh\:mm\:ss")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Cached Routes</h3>
+    </div>
+    <div class="card-body">
+        @if (cachedRoutes != null && cachedRoutes.Any())
+        {
+            <div class="list-group">
+                @foreach (var route in cachedRoutes)
+                {
+                    <div class="list-group-item">
+                        <code>@route</code>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No routes are currently cached. Visit some cached pages first!</p>
+        }
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Cache Invalidation</h3>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <h5>Invalidate by Route</h5>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="routeToInvalidate" placeholder="/simple-cached" />
+                <button class="btn btn-danger" @onclick="InvalidateRoute">Invalidate Route</button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <h5>Invalidate by Pattern</h5>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="patternToInvalidate" placeholder="/tagged-pages/*" />
+                <button class="btn btn-warning" @onclick="InvalidatePattern">Invalidate Pattern</button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <h5>Invalidate by Tag</h5>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="tagToInvalidate" placeholder="products" />
+                <button class="btn btn-warning" @onclick="InvalidateTag">Invalidate Tag</button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <h5>Clear All Cache</h5>
+            <button class="btn btn-danger" @onclick="ClearAll">Clear All Cache</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-success mt-3">
+                @message
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-4">
+    <button class="btn btn-primary" @onclick="RefreshStats">Refresh Statistics</button>
+    <a href="/" class="btn btn-secondary">Back to Home</a>
+</div>
+
+@code {
+    private PageCacheStats? stats;
+    private IReadOnlyCollection<string>? cachedRoutes;
+    private string? routeToInvalidate;
+    private string? patternToInvalidate;
+    private string? tagToInvalidate;
+    private string? message;
+
+    protected override void OnInitialized()
+    {
+        RefreshStats();
+    }
+
+    private void RefreshStats()
+    {
+        stats = ServiceProvider.GetCacheStats();
+        var invalidator = ServiceProvider.GetService<IPageCacheInvalidator>();
+        if (invalidator != null)
+        {
+            cachedRoutes = invalidator.GetCachedRoutes();
+        }
+        message = null;
+        StateHasChanged();
+    }
+
+    private void InvalidateRoute()
+    {
+        if (string.IsNullOrWhiteSpace(routeToInvalidate))
+            return;
+
+        var invalidator = ServiceProvider.GetRequiredService<IPageCacheInvalidator>();
+        var result = invalidator.InvalidateRoute(routeToInvalidate);
+        message = result
+            ? $"Successfully invalidated route: {routeToInvalidate}"
+            : $"Route not found in cache: {routeToInvalidate}";
+        RefreshStats();
+    }
+
+    private void InvalidatePattern()
+    {
+        if (string.IsNullOrWhiteSpace(patternToInvalidate))
+            return;
+
+        var invalidator = ServiceProvider.GetRequiredService<IPageCacheInvalidator>();
+        var count = invalidator.InvalidatePattern(patternToInvalidate);
+        message = $"Invalidated {count} cache entries matching pattern: {patternToInvalidate}";
+        RefreshStats();
+    }
+
+    private void InvalidateTag()
+    {
+        if (string.IsNullOrWhiteSpace(tagToInvalidate))
+            return;
+
+        var invalidator = ServiceProvider.GetRequiredService<IPageCacheInvalidator>();
+        var count = invalidator.InvalidateByTag(tagToInvalidate);
+        message = $"Invalidated {count} cache entries with tag: {tagToInvalidate}";
+        RefreshStats();
+    }
+
+    private void ClearAll()
+    {
+        var invalidator = ServiceProvider.GetRequiredService<IPageCacheInvalidator>();
+        var count = invalidator.ClearAll();
+        message = $"Cleared all {count} cache entries";
+        RefreshStats();
+    }
+}

@@ -1,0 +1,77 @@
+@page "/vary-by-query"
+@attribute [PageCache(Duration = 300, VaryByQueryKeys = new[] { "page", "category" })]
+@using EasyAppDev.Blazor.PageCache.Attributes
+@inject NavigationManager Navigation
+@* Static SSR mode is required for page caching *@
+
+<PageTitle>Vary By Query Parameters</PageTitle>
+
+<h1>Vary By Query Parameters</h1>
+
+<div class="alert alert-info">
+    <strong>Cache Configuration:</strong> Cached for 5 minutes, varies by 'page' and 'category' query parameters.
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Current Request Info</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Rendered At:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")</p>
+        <p><strong>Current URL:</strong> @Navigation.Uri</p>
+        <p><strong>Page Parameter:</strong> @(GetQueryParam("page") ?? "none")</p>
+        <p><strong>Category Parameter:</strong> @(GetQueryParam("category") ?? "none")</p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Try These Links</h3>
+    </div>
+    <div class="card-body">
+        <p>Each combination creates a separate cache entry:</p>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <a href="/vary-by-query?page=1" class="btn btn-outline-primary">Page 1</a>
+            <a href="/vary-by-query?page=2" class="btn btn-outline-primary">Page 2</a>
+            <a href="/vary-by-query?page=3" class="btn btn-outline-primary">Page 3</a>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            <a href="/vary-by-query?category=electronics" class="btn btn-outline-success">Electronics</a>
+            <a href="/vary-by-query?category=books" class="btn btn-outline-success">Books</a>
+            <a href="/vary-by-query?category=clothing" class="btn btn-outline-success">Clothing</a>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            <a href="/vary-by-query?page=1&category=electronics" class="btn btn-outline-warning">Page 1 + Electronics</a>
+            <a href="/vary-by-query?page=2&category=books" class="btn btn-outline-warning">Page 2 + Books</a>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            <a href="/vary-by-query?page=1&utm_source=email" class="btn btn-outline-info">With UTM (Ignored)</a>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>How It Works</h3>
+    </div>
+    <div class="card-body">
+        <ul>
+            <li>Different values for 'page' or 'category' create separate cache entries</li>
+            <li>Ignored parameters (utm_source, fbclid, etc.) don't affect cache keys</li>
+            <li>Perfect for paginated lists, filtered views, or category pages</li>
+        </ul>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+</div>
+
+@code {
+    private string? GetQueryParam(string key)
+    {
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        return query[key];
+    }
+}

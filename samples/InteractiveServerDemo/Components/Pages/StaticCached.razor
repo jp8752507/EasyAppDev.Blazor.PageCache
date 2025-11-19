@@ -1,0 +1,44 @@
+@page "/static-cached"
+@attribute [PageCache(Duration = 60)]
+@using EasyAppDev.Blazor.PageCache.Attributes
+
+<PageTitle>Static Cached Page</PageTitle>
+
+<h1>Static Cached Page (No Interactivity)</h1>
+
+<div class="alert alert-info">
+    <strong>Page Type:</strong> Static SSR (No rendermode directive)<br/>
+    <strong>Cache Duration:</strong> 60 seconds<br/>
+    <strong>X-Page-Cache Header:</strong> Check browser dev tools!
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Render Information</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Rendered At:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")</p>
+        <p><strong>Random Value:</strong> @Guid.NewGuid().ToString("N")[..8]</p>
+        <p class="text-success"><strong>✓ This page is fully static and cacheable</strong></p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Testing Instructions</h3>
+    </div>
+    <div class="card-body">
+        <ol>
+            <li><strong>First Visit:</strong> Note the timestamp and random value above</li>
+            <li><strong>Refresh (F5):</strong> Same values = cache HIT! ✓</li>
+            <li><strong>Hard Refresh (Ctrl+F5):</strong> Should still be cached</li>
+            <li><strong>Check Headers:</strong> Look for <code>X-Page-Cache: HIT</code> in Response Headers</li>
+            <li><strong>Wait 60 seconds:</strong> Values will change on next refresh</li>
+        </ol>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+    <button class="btn btn-secondary" onclick="location.reload()">Refresh Page</button>
+</div>

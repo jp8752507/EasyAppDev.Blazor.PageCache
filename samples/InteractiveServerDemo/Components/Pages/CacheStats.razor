@@ -1,0 +1,209 @@
+@page "/cache-stats"
+@rendermode InteractiveServer
+@inject IServiceProvider ServiceProvider
+@using EasyAppDev.Blazor.PageCache.Extensions
+@using EasyAppDev.Blazor.PageCache.Services
+@using EasyAppDev.Blazor.PageCache.Diagnostics
+
+<PageTitle>Cache Statistics</PageTitle>
+
+<h1>Cache Statistics Dashboard</h1>
+
+<div class="alert alert-info">
+    <strong>Note:</strong> This page is NOT cached to show real-time statistics.
+</div>
+
+@if (stats != null)
+{
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Hit Rate</h5>
+                    <h2 class="@(stats.HitRate > 0.7 ? "text-success" : stats.HitRate > 0.4 ? "text-warning" : "text-danger")">
+                        @stats.HitRate.ToString("P2")
+                    </h2>
+                    <small class="text-muted">Higher is better</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Requests</h5>
+                    <h2 class="text-primary">@stats.TotalRequests.ToString("N0")</h2>
+                    <small class="text-muted">@stats.RequestsPerSecond.ToString("F2") req/s</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Cache Entries</h5>
+                    <h2 class="text-success">@stats.CachedEntries.ToString("N0")</h2>
+                    <small class="text-muted">Active pages</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Cache Size</h5>
+                    <h2 class="text-info">@stats.CacheSizeMB.ToString("F2") MB</h2>
+                    <small class="text-muted">Memory used</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Cache Performance</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th>Cache Hits</th>
+                                <td class="text-end">@stats.HitCount.ToString("N0")</td>
+                            </tr>
+                            <tr>
+                                <th>Cache Misses</th>
+                                <td class="text-end">@stats.MissCount.ToString("N0")</td>
+                            </tr>
+                            <tr>
+                                <th>Evictions</th>
+                                <td class="text-end">@stats.EvictionCount.ToString("N0")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>System Info</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th>Uptime</th>
+                                <td class="text-end">@stats.Duration.ToString(@"hh\:mm\:ss")</td>
+                            </tr>
+                            <tr>
+                                <th>Avg Page Size</th>
+                                <td class="text-end">@stats.AveragePageSizeBytes.ToString("F0") bytes</td>
+                            </tr>
+                            <tr>
+                                <th>Start Time</th>
+                                <td class="text-end">@stats.StartTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        <p>Loading statistics...</p>
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Cached Routes</h3>
+    </div>
+    <div class="card-body">
+        @if (cachedRoutes != null && cachedRoutes.Any())
+        {
+            <div class="list-group">
+                @foreach (var route in cachedRoutes)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <code>@route</code>
+                        <button class="btn btn-sm btn-danger" @onclick="() => InvalidateRoute(route)">
+                            Clear
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No routes are currently cached. Visit some cached pages first!</p>
+        }
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Actions</h3>
+    </div>
+    <div class="card-body">
+        <button class="btn btn-primary" @onclick="RefreshStats">
+            <i class="bi bi-arrow-clockwise"></i> Refresh Statistics
+        </button>
+        <button class="btn btn-danger ms-2" @onclick="ClearAllCache">
+            <i class="bi bi-trash"></i> Clear All Cache
+        </button>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-success mt-3">
+                @message
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-secondary">Back to Home</a>
+</div>
+
+@code {
+    private PageCacheStats? stats;
+    private IReadOnlyCollection<string>? cachedRoutes;
+    private string? message;
+
+    protected override void OnInitialized()
+    {
+        RefreshStats();
+    }
+
+    private void RefreshStats()
+    {
+        stats = ServiceProvider.GetCacheStats();
+        var invalidator = ServiceProvider.GetService<IPageCacheInvalidator>();
+        if (invalidator != null)
+        {
+            cachedRoutes = invalidator.GetCachedRoutes();
+        }
+        message = null;
+        StateHasChanged();
+    }
+
+    private void InvalidateRoute(string route)
+    {
+        var invalidator = ServiceProvider.GetRequiredService<IPageCacheInvalidator>();
+        var result = invalidator.InvalidateRoute(route);
+        message = result
+            ? $"Successfully invalidated route: {route}"
+            : $"Route not found in cache: {route}";
+        RefreshStats();
+    }
+
+    private void ClearAllCache()
+    {
+        var invalidator = ServiceProvider.GetRequiredService<IPageCacheInvalidator>();
+        var count = invalidator.ClearAll();
+        message = $"Cleared all {count} cache entries";
+        RefreshStats();
+    }
+}

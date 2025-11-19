@@ -1,0 +1,67 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+# Claude Code and AI-related files
+.claude/
+.claude-code/
+claude-code/
+.anthropic/
+.ai/
+*.ai-context
+*.claude-context
+.aider*
+.cursor/
+.copilot/
+.github-copilot/
+
+# AI conversation logs and caches
+ai-conversations/
+claude-logs/
+*.ai-log
+*.claude-log
+
+# Temporary AI files
+*.ai-temp
+*.claude-temp
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE
+*.swp
+*.swo
+*~
+.idea/

@@ -1,0 +1,474 @@
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using System.Globalization;
+using System.Security.Claims;
+using EasyAppDev.Blazor.PageCache.Configuration;
+using EasyAppDev.Blazor.PageCache.Services;
+
+namespace EasyAppDev.Blazor.PageCache.Tests.Services;
+
+public class CacheKeyGeneratorTests
+{
+    private readonly Mock<ILogger<DefaultCacheKeyGenerator>> _loggerMock;
+    private readonly PageCacheOptions _options;
+    private readonly DefaultCacheKeyGenerator _generator;
+
+    public CacheKeyGeneratorTests()
+    {
+        _loggerMock = new Mock<ILogger<DefaultCacheKeyGenerator>>();
+        _options = new PageCacheOptions();
+        var optionsMock = new Mock<IOptions<PageCacheOptions>>();
+        optionsMock.Setup(o => o.Value).Returns(_options);
+        _generator = new DefaultCacheKeyGenerator(optionsMock.Object, _loggerMock.Object);
+    }
+
+    [Fact]
+    public void Constructor_WithNullOptions_ThrowsArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var act = () => new DefaultCacheKeyGenerator(null!, _loggerMock.Object);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("options");
+    }
+
+    [Fact]
+    public void Constructor_WithNullLogger_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var optionsMock = new Mock<IOptions<PageCacheOptions>>();
+        optionsMock.Setup(o => o.Value).Returns(_options);
+
+        // Act & Assert
+        var act = () => new DefaultCacheKeyGenerator(optionsMock.Object, null!);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
+    }
+
+    [Fact]
+    public void GenerateKey_WithNullContext_ThrowsArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var act = () => _generator.GenerateKey(null!);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("context");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithSimplePath_ReturnsCorrectKey()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about");
+        var expectedCulture = CultureInfo.CurrentCulture.Name.ToLowerInvariant();
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Be($"PageCache:/about?c={expectedCulture}");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithRootPath_ReturnsCorrectKey()
+    {
+        // Arrange
+        var context = CreateHttpContext("/");
+        var expectedCulture = CultureInfo.CurrentCulture.Name.ToLowerInvariant();
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Be($"PageCache:/?c={expectedCulture}");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithTrailingSlash_NormalizesPath()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about/");
+        var expectedCulture = CultureInfo.CurrentCulture.Name.ToLowerInvariant();
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Be($"PageCache:/about?c={expectedCulture}");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithMixedCase_NormalizesToLowerCase()
+    {
+        // Arrange
+        var context = CreateHttpContext("/About/Contact");
+        var expectedCulture = CultureInfo.CurrentCulture.Name.ToLowerInvariant();
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Be($"PageCache:/about/contact?c={expectedCulture}");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithVaryByQueryKeys_IncludesQueryString()
+    {
+        // Arrange
+        var context = CreateHttpContext("/blog");
+        context.Request.QueryString = new QueryString("?page=2&category=tech");
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByQueryKeys: new[] { "page", "category" });
+
+        // Assert
+        cacheKey.Should().Contain("?qs=category=tech&page=2");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithVaryByQueryKeys_SortsParameters()
+    {
+        // Arrange
+        var context = CreateHttpContext("/blog");
+        context.Request.QueryString = new QueryString("?zebra=1&apple=2&banana=3");
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByQueryKeys: new[] { "zebra", "apple", "banana" });
+
+        // Assert
+        cacheKey.Should().Contain("apple=2&banana=3&zebra=1");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithIgnoredQueryParameters_ExcludesThem()
+    {
+        // Arrange
+        var context = CreateHttpContext("/blog");
+        context.Request.QueryString = new QueryString("?page=2&utm_source=google");
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByQueryKeys: new[] { "page", "utm_source" });
+
+        // Assert
+        cacheKey.Should().Contain("page=2");
+        cacheKey.Should().NotContain("utm_source");
+        cacheKey.Should().NotContain("google");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithMultipleIgnoredParameters_ExcludesAll()
+    {
+        // Arrange
+        var context = CreateHttpContext("/blog");
+        context.Request.QueryString = new QueryString("?page=2&utm_source=google&utm_campaign=spring&fbclid=abc123");
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByQueryKeys: new[] { "page", "utm_source", "utm_campaign", "fbclid" });
+
+        // Assert
+        cacheKey.Should().Contain("page=2");
+        cacheKey.Should().NotContain("utm_source");
+        cacheKey.Should().NotContain("utm_campaign");
+        cacheKey.Should().NotContain("fbclid");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithVaryByHeader_IncludesHeader()
+    {
+        // Arrange
+        var context = CreateHttpContext("/api/data");
+        context.Request.Headers["Accept-Language"] = "es-ES";
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByHeader: "Accept-Language");
+
+        // Assert
+        cacheKey.Should().Contain("?h=accept-language=es-es");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithVaryByHeader_NormalizesToLowerCase()
+    {
+        // Arrange
+        var context = CreateHttpContext("/api/data");
+        context.Request.Headers["Accept-Language"] = "EN-US";
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByHeader: "Accept-Language");
+
+        // Assert
+        cacheKey.Should().Contain("?h=accept-language=en-us");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithMissingVaryByHeader_DoesNotIncludeHeader()
+    {
+        // Arrange
+        var context = CreateHttpContext("/api/data");
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByHeader: "Accept-Language");
+
+        // Assert
+        cacheKey.Should().NotContain("?h=");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithRouteValues_IncludesThem()
+    {
+        // Arrange
+        var context = CreateHttpContext("/blog/my-post");
+        var routeData = new RouteData();
+        routeData.Values["slug"] = "my-post";
+        context.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Contain("?rv=slug=my-post");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithMultipleRouteValues_SortsThem()
+    {
+        // Arrange
+        var context = CreateHttpContext("/blog/tech/article-1");
+        var routeData = new RouteData();
+        routeData.Values["category"] = "tech";
+        routeData.Values["slug"] = "article-1";
+        context.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Contain("?rv=category=tech&slug=article-1");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithPageRouteValue_ExcludesIt()
+    {
+        // Arrange
+        var context = CreateHttpContext("/counter");
+        var routeData = new RouteData();
+        routeData.Values["page"] = "/counter";
+        routeData.Values["slug"] = "test";
+        context.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().NotContain("page=");
+        cacheKey.Should().Contain("slug=test");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithVaryByCultureEnabled_IncludesCulture()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about");
+        var expectedCulture = CultureInfo.CurrentCulture.Name.ToLowerInvariant();
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Contain($"?c={expectedCulture}");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithVaryByCultureDisabled_DoesNotIncludeCulture()
+    {
+        // Arrange
+        _options.VaryByCulture = false;
+        var context = CreateHttpContext("/about");
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().Be("PageCache:/about");
+        cacheKey.Should().NotContain("?c=");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithCustomPrefix_UsesIt()
+    {
+        // Arrange
+        _options.CacheKeyPrefix = "MyApp:Cache:";
+        var context = CreateHttpContext("/about");
+
+        // Act
+        var cacheKey = _generator.GenerateKey(context);
+
+        // Assert
+        cacheKey.Should().StartWith("MyApp:Cache:");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithAllVariations_CombinesThem()
+    {
+        // Arrange
+        var context = CreateHttpContext("/blog/my-post");
+        var routeData = new RouteData();
+        routeData.Values["slug"] = "my-post";
+        context.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
+        context.Request.QueryString = new QueryString("?page=2&sort=asc");
+        context.Request.Headers["Accept-Language"] = "es-ES";
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByQueryKeys: new[] { "page", "sort" },
+            varyByHeader: "Accept-Language");
+
+        // Assert
+        cacheKey.Should().Contain("/blog/my-post");
+        cacheKey.Should().Contain("rv=slug=my-post");
+        cacheKey.Should().Contain("qs=page=2&sort=asc");
+        cacheKey.Should().Contain("h=accept-language=es-es");
+    }
+
+    [Fact]
+    public void GenerateCacheKey_CalledMultipleTimes_ReturnsSameKey()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about");
+
+        // Act
+        var key1 = _generator.GenerateKey(context);
+        var key2 = _generator.GenerateKey(context);
+
+        // Assert
+        key1.Should().Be(key2);
+    }
+
+    [Fact]
+    public void GenerateCacheKey_WithEmptyQueryString_DoesNotIncludeQueryMarker()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about");
+        context.Request.QueryString = QueryString.Empty;
+
+        // Act
+        var cacheKey = _generator.GenerateKey(
+            context,
+            varyByQueryKeys: new[] { "page" });
+
+        // Assert
+        cacheKey.Should().NotContain("?qs=");
+    }
+
+    [Fact]
+    public void IsCacheable_WithNullContext_ThrowsArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var act = () => _generator.IsCacheable(null!);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("context");
+    }
+
+    [Fact]
+    public void IsCacheable_WithGetRequest_ReturnsTrue()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about");
+
+        // Act
+        var result = _generator.IsCacheable(context);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("DELETE")]
+    [InlineData("PATCH")]
+    [InlineData("HEAD")]
+    [InlineData("OPTIONS")]
+    public void IsCacheable_WithNonGetRequest_ReturnsFalse(string method)
+    {
+        // Arrange
+        var context = CreateHttpContext("/api/data");
+        context.Request.Method = method;
+
+        // Act
+        var result = _generator.IsCacheable(context);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsCacheable_WithAuthenticatedUser_ReturnsFalse()
+    {
+        // Arrange
+        var context = CreateHttpContext("/dashboard");
+        var identity = new ClaimsIdentity("TestAuth");
+        context.User = new ClaimsPrincipal(identity);
+
+        // Act
+        var result = _generator.IsCacheable(context);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsCacheable_WithUnauthenticatedUser_ReturnsTrue()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about");
+        var identity = new ClaimsIdentity();
+        context.User = new ClaimsPrincipal(identity);
+
+        // Act
+        var result = _generator.IsCacheable(context);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsCacheable_WithNullUser_ReturnsTrue()
+    {
+        // Arrange
+        var context = CreateHttpContext("/about");
+        context.User = null!;
+
+        // Act
+        var result = _generator.IsCacheable(context);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    private static DefaultHttpContext CreateHttpContext(string path)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = path;
+        context.Request.Method = "GET";
+        return context;
+    }
+
+    private class RoutingFeature : IRoutingFeature
+    {
+        public RouteData? RouteData { get; set; } = new RouteData();
+    }
+}

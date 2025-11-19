@@ -1,0 +1,65 @@
+@page "/tagged-pages/{ProductId:int?}"
+@attribute [PageCache(Duration = 600, Tags = new[] { "products", "catalog" })]
+@using EasyAppDev.Blazor.PageCache.Attributes
+@* Static SSR mode is required for page caching *@
+
+<PageTitle>Tagged Page - Product @(ProductId?.ToString() ?? "List")</PageTitle>
+
+<h1>Tagged Page Example</h1>
+
+<div class="alert alert-info">
+    <strong>Cache Configuration:</strong> Cached for 10 minutes with tags: "products", "catalog"
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Product @(ProductId?.ToString() ?? "Listing")</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Rendered At:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")</p>
+        <p><strong>Product ID:</strong> @(ProductId?.ToString() ?? "All Products")</p>
+        <p><strong>Cache Tags:</strong> products, catalog</p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Browse Products</h3>
+    </div>
+    <div class="card-body">
+        <p>Each product page is cached separately but shares common tags:</p>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <a href="/tagged-pages" class="btn btn-outline-primary">All Products</a>
+            <a href="/tagged-pages/101" class="btn btn-outline-primary">Product 101</a>
+            <a href="/tagged-pages/102" class="btn btn-outline-primary">Product 102</a>
+            <a href="/tagged-pages/103" class="btn btn-outline-primary">Product 103</a>
+            <a href="/tagged-pages/104" class="btn btn-outline-primary">Product 104</a>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Tag-Based Invalidation</h3>
+    </div>
+    <div class="card-body">
+        <p>All these product pages can be invalidated at once using tags:</p>
+        <ul>
+            <li>Invalidate all pages tagged "products"</li>
+            <li>Invalidate all pages tagged "catalog"</li>
+            <li>Perfect for bulk updates (e.g., price changes, inventory updates)</li>
+        </ul>
+        <p class="text-muted mt-3">
+            Go to <a href="/cache-admin">Cache Admin</a> to try invalidating by tag!
+        </p>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+</div>
+
+@code {
+    [Parameter]
+    public int? ProductId { get; set; }
+}

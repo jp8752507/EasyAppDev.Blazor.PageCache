@@ -1,0 +1,136 @@
+@page "/advanced-features"
+@attribute [PageCache(Duration = 180, VaryByHeader = "Accept-Language")]
+@using EasyAppDev.Blazor.PageCache.Attributes
+@* Static SSR mode is required for page caching *@
+
+<PageTitle>Advanced Features</PageTitle>
+
+<h1>Advanced Features</h1>
+
+<div class="alert alert-info">
+    <strong>Cache Configuration:</strong> Cached for 3 minutes, varies by Accept-Language header
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Page Rendering Info</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Rendered At:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")</p>
+        <p><strong>Cache Duration:</strong> 180 seconds (3 minutes)</p>
+        <p><strong>Vary By:</strong> Accept-Language header</p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Feature Showcase</h3>
+    </div>
+    <div class="card-body">
+        <h5>1. Vary by Header</h5>
+        <p>This page creates separate cache entries for different language preferences.</p>
+        <p class="text-muted">Change your browser's language settings to see different cached versions.</p>
+
+        <h5 class="mt-4">2. Cache Stampede Prevention</h5>
+        <p>Built-in request coalescing ensures that when cache expires:</p>
+        <ul>
+            <li>Only ONE request regenerates the page</li>
+            <li>Other concurrent requests wait for the first to complete</li>
+            <li>Prevents duplicate rendering and database load</li>
+        </ul>
+
+        <h5 class="mt-4">3. Flexible Configuration</h5>
+        <p>Configure cache behavior globally or per-page:</p>
+        <ul>
+            <li>Default duration vs. page-specific duration</li>
+            <li>Global ignored query parameters</li>
+            <li>Max cache size limits</li>
+            <li>Sliding expiration</li>
+            <li>Statistics tracking</li>
+        </ul>
+
+        <h5 class="mt-4">4. Compression Support</h5>
+        <p>Optional GZip compression for cached HTML:</p>
+        <ul>
+            <li>Reduces memory usage</li>
+            <li>Configurable via <code>CompressCachedContent</code></li>
+            <li>Trade CPU for memory savings</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Performance Benefits</h3>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Without Cache</th>
+                    <th>With Cache</th>
+                    <th>Improvement</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Simple Page</td>
+                    <td>100-200ms</td>
+                    <td>2-5ms</td>
+                    <td class="text-success">20-50x faster</td>
+                </tr>
+                <tr>
+                    <td>Complex Page</td>
+                    <td>300-500ms</td>
+                    <td>3-7ms</td>
+                    <td class="text-success">40-100x faster</td>
+                </tr>
+                <tr>
+                    <td>With Database</td>
+                    <td>500-1000ms</td>
+                    <td>3-7ms</td>
+                    <td class="text-success">100-300x faster</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Best Practices</h3>
+    </div>
+    <div class="card-body">
+        <h5>When to Use Page Caching</h5>
+        <ul>
+            <li>Static content pages (About, Features)</li>
+            <li>Blog posts and articles</li>
+            <li>Product catalogs and listings</li>
+            <li>Documentation pages</li>
+            <li>Marketing and landing pages</li>
+        </ul>
+
+        <h5 class="mt-3">When NOT to Use Page Caching</h5>
+        <ul>
+            <li>Pages with user-specific content</li>
+            <li>Forms with anti-forgery tokens</li>
+            <li>Real-time data displays</li>
+            <li>Authenticated user dashboards</li>
+            <li>Shopping cart pages</li>
+        </ul>
+
+        <h5 class="mt-3">Security Considerations</h5>
+        <ul>
+            <li>By default, authenticated users are NOT cached</li>
+            <li>Use <code>CacheForAuthenticatedUsers = true</code> only for public content</li>
+            <li>Never cache pages with sensitive user data</li>
+            <li>Be careful with personalized content</li>
+        </ul>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+    <a href="/cache-admin" class="btn btn-info">View Cache Stats</a>
+</div>

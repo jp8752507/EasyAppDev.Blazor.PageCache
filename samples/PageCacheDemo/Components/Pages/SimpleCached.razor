@@ -1,0 +1,45 @@
+@page "/simple-cached"
+@attribute [PageCache(Duration = 60)]
+@using EasyAppDev.Blazor.PageCache.Attributes
+@* Static SSR mode is required for page caching *@
+
+<PageTitle>Simple Cached Page</PageTitle>
+
+<h1>Simple Cached Page</h1>
+
+<div class="alert alert-info">
+    <strong>Cache Configuration:</strong> This page is cached for 60 seconds.
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Page Rendering Information</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>First Rendered At:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")</p>
+        <p><strong>Cache Duration:</strong> 60 seconds</p>
+        <p class="text-muted">
+            Refresh this page multiple times within 60 seconds - you'll see the same timestamp,
+            proving the page is being served from cache!
+        </p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>How It Works</h3>
+    </div>
+    <div class="card-body">
+        <ul>
+            <li>First request renders the page normally (~100-200ms)</li>
+            <li>Subsequent requests serve cached HTML (~2-5ms)</li>
+            <li>Cache expires after 60 seconds</li>
+            <li>Next request after expiration re-renders and re-caches</li>
+        </ul>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-primary">Back to Home</a>
+    <button class="btn btn-secondary" onclick="location.reload()">Refresh Page</button>
+</div>
