@@ -45,9 +45,24 @@ Lightweight, high-performance HTML response caching for **Static Server-Side Ren
 
 ### Installation
 
+Install via NuGet Package Manager or CLI:
+
+**NuGet Package Manager:**
+```
+Install-Package EasyAppDev.Blazor.PageCache
+```
+
+**.NET CLI:**
 ```bash
 dotnet add package EasyAppDev.Blazor.PageCache
 ```
+
+**Package Reference:**
+```xml
+<PackageReference Include="EasyAppDev.Blazor.PageCache" Version="1.0.0-preview.1" />
+```
+
+📦 [View on NuGet.org](https://www.nuget.org/packages/EasyAppDev.Blazor.PageCache/)
 
 ### Basic Configuration
 
@@ -715,12 +730,6 @@ builder.Services.Configure<SecurityOptions>(options =>
 
 ⚠️ **Warning:** Only enable if you understand the security implications and have proper cache key generation including user identity.
 
-## Documentation
-
-- [Security Guide](docs/security.md) - Security considerations and best practices
-- [API Reference](docs/PHASE3_FEATURES.md) - Complete feature documentation
-- [Quick Start Guide](docs/../PHASE3_QUICK_START.md) - Fast setup instructions
-
 ## Requirements
 
 - .NET 8.0 or .NET 9.0
@@ -733,12 +742,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/easyappdev/Blazor.PageCache/issues)
-- 💬 [Discussions](https://github.com/easyappdev/Blazor.PageCache/discussions)
 
 ## Acknowledgments
 

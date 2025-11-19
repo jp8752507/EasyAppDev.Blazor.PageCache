@@ -12,12 +12,19 @@
     <!-- NuGet Package Metadata -->
     <PackageId>EasyAppDev.Blazor.PageCache</PackageId>
     <Version>1.0.0-preview.1</Version>
-    <Authors>EasyAppDev</Authors>
-    <Description>Lightweight HTML response caching for Blazor SSR applications.</Description>
-    <PackageTags>blazor;caching;performance;ssr;aspnetcore;dotnet</PackageTags>
+    <Authors>Mashrul Haque</Authors>
+    <Company>EasyAppDev</Company>
+    <Product>EasyAppDev.Blazor.PageCache</Product>
+    <Description>Lightweight, high-performance HTML response caching for Static Server-Side Rendered (SSR) Blazor pages. Dramatically improve page load times (20-50x faster) with declarative [PageCache] attributes. Features include cache stampede prevention, tag-based invalidation, flexible cache keys, compression support, security validation, and comprehensive diagnostics. Best for static SSR pages and static wrappers with selective component-level interactivity.</Description>
+    <PackageTags>blazor;blazor-server;caching;performance;ssr;server-side-rendering;aspnetcore;dotnet;html-cache;page-cache;response-cache;middleware;net8;net9</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mashrulhaque/EasyAppDev.Blazor.PageCache</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mashrulhaque/EasyAppDev.Blazor.PageCache</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>nuget_icon.png</PackageIcon>
+    <Copyright>Copyright © EasyAppDev 2025</Copyright>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +42,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\nuget_icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
