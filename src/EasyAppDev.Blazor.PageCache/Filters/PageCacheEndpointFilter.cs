@@ -89,11 +89,21 @@ public sealed partial class PageCacheEndpointFilter : IEndpointFilter
             // Cache successful responses only
             if (ShouldCacheResponse(httpContext))
             {
-                var duration = cacheAttribute.Duration > 0
-                    ? cacheAttribute.Duration
-                    : _options.DefaultDurationSeconds;
-
-                await _cacheService.SetCachedHtmlAsync(cacheKey, html, duration);
+                // Determine cache duration with priority: CacheDuration (TimeSpan) > Duration (seconds) > defaults
+                if (cacheAttribute.CacheDuration.HasValue)
+                {
+                    await _cacheService.SetCachedHtmlAsync(cacheKey, html, cacheAttribute.CacheDuration.Value);
+                }
+                else if (cacheAttribute.Duration > 0)
+                {
+                    await _cacheService.SetCachedHtmlAsync(cacheKey, html, cacheAttribute.Duration);
+                }
+                else
+                {
+                    // Use default from configuration (prefer DefaultDuration if set, otherwise DefaultDurationSeconds)
+                    var defaultDuration = _options.DefaultDuration ?? TimeSpan.FromSeconds(_options.DefaultDurationSeconds);
+                    await _cacheService.SetCachedHtmlAsync(cacheKey, html, defaultDuration);
+                }
 
                 var route = httpContext.Request.Path.Value ?? "/";
                 if (_invalidator is PageCacheInvalidator invalidatorImpl)

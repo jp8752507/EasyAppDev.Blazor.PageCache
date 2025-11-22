@@ -1,0 +1,121 @@
+@page "/timespan-duration"
+@using EasyAppDev.Blazor.PageCache.Attributes
+
+@* Demonstrate using TimeSpan for cache duration *@
+[PageCache(CacheDuration = TimeSpan.FromHours(1))]
+
+<PageTitle>TimeSpan Duration - Page Cache Demo</PageTitle>
+
+<h1>TimeSpan Duration Example</h1>
+
+<div class="alert alert-info">
+    <h4>About This Page</h4>
+    <p>This page demonstrates using <code>TimeSpan</code> for cache duration instead of seconds.</p>
+    <ul>
+        <li><strong>Cache Duration:</strong> 1 hour (using <code>TimeSpan.FromHours(1)</code>)</li>
+        <li><strong>Rendered at:</strong> @DateTime.Now.ToString("HH:mm:ss")</li>
+        <li><strong>Benefits:</strong> More readable and type-safe compared to using raw seconds (3600)</li>
+    </ul>
+</div>
+
+<h2>TimeSpan vs Seconds Comparison</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Duration</th>
+            <th>Old Way (Seconds)</th>
+            <th>New Way (TimeSpan)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>30 seconds</td>
+            <td><code>[PageCache(Duration = 30)]</code></td>
+            <td><code>[PageCache(CacheDuration = TimeSpan.FromSeconds(30))]</code></td>
+        </tr>
+        <tr>
+            <td>5 minutes</td>
+            <td><code>[PageCache(Duration = 300)]</code></td>
+            <td><code>[PageCache(CacheDuration = TimeSpan.FromMinutes(5))]</code></td>
+        </tr>
+        <tr>
+            <td>1 hour</td>
+            <td><code>[PageCache(Duration = 3600)]</code></td>
+            <td><code>[PageCache(CacheDuration = TimeSpan.FromHours(1))]</code></td>
+        </tr>
+        <tr>
+            <td>1 day</td>
+            <td><code>[PageCache(Duration = 86400)]</code></td>
+            <td><code>[PageCache(CacheDuration = TimeSpan.FromDays(1))]</code></td>
+        </tr>
+        <tr>
+            <td>Custom (90 minutes)</td>
+            <td><code>[PageCache(Duration = 5400)]</code></td>
+            <td><code>[PageCache(CacheDuration = TimeSpan.FromMinutes(90))]</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Configuration Examples</h2>
+
+<p>You can also use TimeSpan in configuration:</p>
+
+<pre><code class="language-csharp">// Old way - using seconds
+services.AddPageCache(options =>
+{
+    options.DefaultDurationSeconds = 300;
+    options.SlidingExpirationSeconds = 60;
+});
+
+// New way - using TimeSpan
+services.AddPageCache(options =>
+{
+    options.DefaultDuration = TimeSpan.FromMinutes(5);
+    options.SlidingExpiration = TimeSpan.FromMinutes(1);
+});
+</code></pre>
+
+<h2>Why Use TimeSpan?</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Advantages</h5>
+                <ul>
+                    <li><strong>Readability:</strong> <code>TimeSpan.FromHours(1)</code> is clearer than <code>3600</code></li>
+                    <li><strong>Type Safety:</strong> Compile-time checking for duration values</li>
+                    <li><strong>Less Error-Prone:</strong> No mental math required</li>
+                    <li><strong>Maintainability:</strong> Intent is clear to future developers</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Backward Compatibility</h5>
+                <ul>
+                    <li>Existing code using <code>Duration</code> (seconds) continues to work</li>
+                    <li>Can mix both approaches in the same application</li>
+                    <li>Default values fallback gracefully</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <p class="text-muted">
+        <small>
+            <strong>Note:</strong> You cannot use both <code>Duration</code> and <code>CacheDuration</code>
+            on the same attribute. The validator will reject conflicting configurations.
+        </small>
+    </p>
+</div>
+
+@code {
+    // This page itself is cached for 1 hour using TimeSpan
+    // Check the page source to see when it was last rendered
+}

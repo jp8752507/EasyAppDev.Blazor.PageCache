@@ -22,6 +22,15 @@ public interface IPageCacheService
     Task SetCachedHtmlAsync(string cacheKey, string html, int durationSeconds);
 
     /// <summary>
+    /// Stores HTML in the cache with the specified duration.
+    /// </summary>
+    /// <param name="cacheKey">The cache key.</param>
+    /// <param name="html">The HTML content to cache.</param>
+    /// <param name="duration">The cache duration as a TimeSpan.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task SetCachedHtmlAsync(string cacheKey, string html, TimeSpan duration);
+
+    /// <summary>
     /// Removes a specific cache entry.
     /// </summary>
     /// <param name="cacheKey">The cache key to remove.</param>

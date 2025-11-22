@@ -9,17 +9,21 @@ namespace EasyAppDev.Blazor.PageCache.Attributes;
 /// [PageCache]
 /// @page "/about"
 ///
-/// // Custom duration (1 hour)
+/// // Custom duration using seconds (1 hour)
 /// [PageCache(Duration = 3600)]
 /// @page "/features"
 ///
+/// // Custom duration using TimeSpan (1 hour)
+/// [PageCache(CacheDuration = TimeSpan.FromHours(1))]
+/// @page "/products"
+///
 /// // Vary by query parameters
-/// [PageCache(Duration = 1800, VaryByQueryKeys = new[] { "page", "category" })]
+/// [PageCache(CacheDuration = TimeSpan.FromMinutes(30), VaryByQueryKeys = new[] { "page", "category" })]
 /// @page "/blog"
 ///
 /// // With tags for grouped invalidation
-/// [PageCache(Duration = 3600, Tags = new[] { "products", "catalog" })]
-/// @page "/products"
+/// [PageCache(CacheDuration = TimeSpan.FromHours(1), Tags = new[] { "products", "catalog" })]
+/// @page "/catalog"
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
@@ -29,7 +33,19 @@ public sealed class PageCacheAttribute : Attribute
     /// Gets or sets the cache duration in seconds.
     /// If not specified, uses the default from <see cref="Configuration.PageCacheOptions.DefaultDurationSeconds"/>.
     /// </summary>
+    /// <remarks>
+    /// Cannot be used together with <see cref="CacheDuration"/>. Use either Duration (seconds) or CacheDuration (TimeSpan).
+    /// </remarks>
     public int Duration { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cache duration as a TimeSpan.
+    /// If not specified, uses the default from <see cref="Configuration.PageCacheOptions.DefaultDuration"/> or <see cref="Configuration.PageCacheOptions.DefaultDurationSeconds"/>.
+    /// </summary>
+    /// <remarks>
+    /// Cannot be used together with <see cref="Duration"/>. Use either Duration (seconds) or CacheDuration (TimeSpan).
+    /// </remarks>
+    public TimeSpan? CacheDuration { get; set; }
 
     /// <summary>
     /// Gets or sets query string keys to vary the cache by.

@@ -15,7 +15,19 @@ public sealed class PageCacheOptions
     /// Gets or sets the default cache duration in seconds.
     /// Default is 300 seconds (5 minutes).
     /// </summary>
+    /// <remarks>
+    /// Cannot be used together with <see cref="DefaultDuration"/>. Use either DefaultDurationSeconds or DefaultDuration.
+    /// </remarks>
     public int DefaultDurationSeconds { get; set; } = 300;
+
+    /// <summary>
+    /// Gets or sets the default cache duration as a TimeSpan.
+    /// If not specified, uses <see cref="DefaultDurationSeconds"/>.
+    /// </summary>
+    /// <remarks>
+    /// Cannot be used together with <see cref="DefaultDurationSeconds"/>. Use either DefaultDurationSeconds or DefaultDuration.
+    /// </remarks>
+    public TimeSpan? DefaultDuration { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum size of the cache in megabytes.
@@ -27,7 +39,19 @@ public sealed class PageCacheOptions
     /// Gets or sets the sliding expiration duration in seconds.
     /// Default is null (no sliding expiration).
     /// </summary>
+    /// <remarks>
+    /// Cannot be used together with <see cref="SlidingExpiration"/>. Use either SlidingExpirationSeconds or SlidingExpiration.
+    /// </remarks>
     public int? SlidingExpirationSeconds { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sliding expiration duration as a TimeSpan.
+    /// Default is null (no sliding expiration).
+    /// </summary>
+    /// <remarks>
+    /// Cannot be used together with <see cref="SlidingExpirationSeconds"/>. Use either SlidingExpirationSeconds or SlidingExpiration.
+    /// </remarks>
+    public TimeSpan? SlidingExpiration { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to compress cached HTML.

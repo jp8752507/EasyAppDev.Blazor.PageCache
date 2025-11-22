@@ -369,6 +369,14 @@ public sealed partial class PageCacheService : IPageCacheService, IDisposable
     }
 
     /// <inheritdoc />
+    public Task SetCachedHtmlAsync(string cacheKey, string html, TimeSpan duration)
+    {
+        // Convert TimeSpan to seconds and delegate to existing implementation
+        var durationSeconds = (int)duration.TotalSeconds;
+        return SetCachedHtmlAsync(cacheKey, html, durationSeconds);
+    }
+
+    /// <inheritdoc />
     public void Remove(string cacheKey)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);

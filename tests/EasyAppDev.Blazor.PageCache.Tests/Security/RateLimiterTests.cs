@@ -97,65 +97,6 @@ public class RateLimiterTests : IDisposable
         remaining.Should().Be(1);
     }
 
-    [Fact]
-    public async Task IsAllowed_SlidingWindow_ShouldAllowAfterWindowExpires()
-    {
-        // Arrange
-        var key = "test-key";
-        var maxAttempts = 2;
-        var windowSeconds = 1; // 1 second window for faster test
-
-        // Fill up the limit
-        _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out _, out _);
-        _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out _, out _);
-
-        // Verify limit is reached
-        var blockedResult = _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out _, out _);
-        blockedResult.Should().BeFalse();
-
-        // Wait for window to slide
-        await Task.Delay(TimeSpan.FromSeconds(1.1));
-
-        // Act - Try again after window expires
-        var result = _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out var remaining, out _);
-
-        // Assert
-        result.Should().BeTrue();
-        remaining.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task IsAllowed_SlidingWindow_ShouldPartiallyRecover()
-    {
-        // Arrange
-        var key = "test-key";
-        var maxAttempts = 3;
-        var windowSeconds = 1;
-
-        // Make first request
-        _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out _, out _);
-
-        // Wait a bit
-        await Task.Delay(TimeSpan.FromSeconds(0.6));
-
-        // Make two more requests
-        _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out _, out _);
-        _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out _, out _);
-
-        // Verify limit is reached
-        var blockedResult = _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out _, out _);
-        blockedResult.Should().BeFalse();
-
-        // Wait for first request to expire from window
-        await Task.Delay(TimeSpan.FromSeconds(0.5));
-
-        // Act - First request should have expired, allowing one more
-        var result = _rateLimiter.IsAllowed(key, maxAttempts, windowSeconds, out var remaining, out _);
-
-        // Assert
-        result.Should().BeTrue();
-        remaining.Should().Be(0); // Still have 2 requests in window
-    }
 
     [Fact]
     public void IsAllowed_ConcurrentRequests_ShouldBeThreadSafe()

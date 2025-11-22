@@ -202,16 +202,7 @@ public class PageCacheCaptureMiddleware
                     {
                         try
                         {
-                            int duration = _options.DefaultDurationSeconds;
-                            string[]? tags = null;
-
-                            // Use duration from attribute if specified
-                            if (pageCacheAttr.Duration > 0)
-                            {
-                                duration = pageCacheAttr.Duration;
-                            }
-
-                            tags = pageCacheAttr.Tags;
+                            string[]? tags = pageCacheAttr.Tags;
 
                             // CRITICAL SECURITY FIX (Issue 6.1): Register cache key BEFORE storing
                             // This prevents race condition where invalidation could happen between
@@ -224,7 +215,21 @@ public class PageCacheCaptureMiddleware
 
                             // Now store the cached HTML
                             // Even if invalidation happens now, the entry is already registered and can be found
-                            await _cacheService.SetCachedHtmlAsync(cacheKey, capturedHtml, duration);
+                            // Determine cache duration with priority: CacheDuration (TimeSpan) > Duration (seconds) > defaults
+                            if (pageCacheAttr.CacheDuration.HasValue)
+                            {
+                                await _cacheService.SetCachedHtmlAsync(cacheKey, capturedHtml, pageCacheAttr.CacheDuration.Value);
+                            }
+                            else if (pageCacheAttr.Duration > 0)
+                            {
+                                await _cacheService.SetCachedHtmlAsync(cacheKey, capturedHtml, pageCacheAttr.Duration);
+                            }
+                            else
+                            {
+                                // Use default from configuration (prefer DefaultDuration if set, otherwise DefaultDurationSeconds)
+                                var defaultDuration = _options.DefaultDuration ?? TimeSpan.FromSeconds(_options.DefaultDurationSeconds);
+                                await _cacheService.SetCachedHtmlAsync(cacheKey, capturedHtml, defaultDuration);
+                            }
 
                             // Conditionally add debug header
                             if (_options.Security.ExposeDebugHeaders)
@@ -232,11 +237,20 @@ public class PageCacheCaptureMiddleware
                                 context.Response.Headers["X-Page-Cache"] = "MISS";
                             }
 
+                            // Determine duration for logging
+                            var durationSeconds = pageCacheAttr.CacheDuration.HasValue
+                                ? (int)pageCacheAttr.CacheDuration.Value.TotalSeconds
+                                : pageCacheAttr.Duration > 0
+                                    ? pageCacheAttr.Duration
+                                    : _options.DefaultDuration.HasValue
+                                        ? (int)_options.DefaultDuration.Value.TotalSeconds
+                                        : _options.DefaultDurationSeconds;
+
                             _logger.LogDebug(
                                 "Captured and cached HTML for route: {Route} ({Size} bytes, {Duration}s TTL)",
                                 route,
                                 capturedHtml.Length,
-                                duration);
+                                durationSeconds);
                         }
                         catch (Exception ex)
                         {

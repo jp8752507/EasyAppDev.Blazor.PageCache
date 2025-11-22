@@ -15,6 +15,8 @@ internal sealed class PageCacheOptionsValidator : IValidateOptions<PageCacheOpti
     // Reasonable limits for configuration values
     private const int MinDurationSeconds = 1;
     private const int MaxDurationSeconds = 86400 * 7; // 7 days
+    private static readonly TimeSpan MinDuration = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan MaxDuration = TimeSpan.FromDays(7);
     private const int MinCacheSizeMB = 1;
     private const int MaxCacheSizeMB = 10240; // 10 GB
     private const int MinTimeoutSeconds = 1;
@@ -31,18 +33,43 @@ internal sealed class PageCacheOptionsValidator : IValidateOptions<PageCacheOpti
     {
         var errors = new List<string>();
 
-        // Validate DefaultDurationSeconds with range check
-        if (options.DefaultDurationSeconds <= 0)
+        // Validate mutual exclusivity: DefaultDurationSeconds vs DefaultDuration
+        if (options.DefaultDuration.HasValue && options.DefaultDurationSeconds != 300) // 300 is the default value
         {
-            errors.Add($"{nameof(options.DefaultDurationSeconds)} must be greater than 0.");
+            errors.Add($"Cannot specify both {nameof(options.DefaultDurationSeconds)} and {nameof(options.DefaultDuration)}. Use one or the other.");
         }
-        else if (options.DefaultDurationSeconds < MinDurationSeconds)
+
+        // Validate DefaultDuration (TimeSpan) with range check
+        if (options.DefaultDuration.HasValue)
         {
-            errors.Add($"{nameof(options.DefaultDurationSeconds)} must be at least {MinDurationSeconds} second(s). Current value: {options.DefaultDurationSeconds}");
+            if (options.DefaultDuration.Value <= TimeSpan.Zero)
+            {
+                errors.Add($"{nameof(options.DefaultDuration)} must be greater than zero.");
+            }
+            else if (options.DefaultDuration.Value < MinDuration)
+            {
+                errors.Add($"{nameof(options.DefaultDuration)} must be at least {MinDuration.TotalSeconds} second(s). Current value: {options.DefaultDuration.Value.TotalSeconds} seconds");
+            }
+            else if (options.DefaultDuration.Value > MaxDuration)
+            {
+                errors.Add($"{nameof(options.DefaultDuration)} must not exceed {MaxDuration.TotalDays} days. Current value: {options.DefaultDuration.Value.TotalDays} days");
+            }
         }
-        else if (options.DefaultDurationSeconds > MaxDurationSeconds)
+        // Validate DefaultDurationSeconds with range check (only if DefaultDuration is not set)
+        else
         {
-            errors.Add($"{nameof(options.DefaultDurationSeconds)} must not exceed {MaxDurationSeconds} seconds (7 days). Current value: {options.DefaultDurationSeconds}");
+            if (options.DefaultDurationSeconds <= 0)
+            {
+                errors.Add($"{nameof(options.DefaultDurationSeconds)} must be greater than 0.");
+            }
+            else if (options.DefaultDurationSeconds < MinDurationSeconds)
+            {
+                errors.Add($"{nameof(options.DefaultDurationSeconds)} must be at least {MinDurationSeconds} second(s). Current value: {options.DefaultDurationSeconds}");
+            }
+            else if (options.DefaultDurationSeconds > MaxDurationSeconds)
+            {
+                errors.Add($"{nameof(options.DefaultDurationSeconds)} must not exceed {MaxDurationSeconds} seconds (7 days). Current value: {options.DefaultDurationSeconds}");
+            }
         }
 
         // Validate MaxCacheSizeMB with range check
@@ -62,8 +89,38 @@ internal sealed class PageCacheOptionsValidator : IValidateOptions<PageCacheOpti
             }
         }
 
-        // Validate SlidingExpirationSeconds with range check
-        if (options.SlidingExpirationSeconds.HasValue)
+        // Validate mutual exclusivity: SlidingExpirationSeconds vs SlidingExpiration
+        if (options.SlidingExpiration.HasValue && options.SlidingExpirationSeconds.HasValue)
+        {
+            errors.Add($"Cannot specify both {nameof(options.SlidingExpirationSeconds)} and {nameof(options.SlidingExpiration)}. Use one or the other.");
+        }
+
+        // Validate SlidingExpiration (TimeSpan) with range check
+        if (options.SlidingExpiration.HasValue)
+        {
+            if (options.SlidingExpiration.Value <= TimeSpan.Zero)
+            {
+                errors.Add($"{nameof(options.SlidingExpiration)} must be greater than zero.");
+            }
+            else if (options.SlidingExpiration.Value < MinDuration)
+            {
+                errors.Add($"{nameof(options.SlidingExpiration)} must be at least {MinDuration.TotalSeconds} second(s). Current value: {options.SlidingExpiration.Value.TotalSeconds} seconds");
+            }
+            else if (options.SlidingExpiration.Value > MaxDuration)
+            {
+                errors.Add($"{nameof(options.SlidingExpiration)} must not exceed {MaxDuration.TotalDays} days. Current value: {options.SlidingExpiration.Value.TotalDays} days");
+            }
+
+            // Validate sliding expiration is not greater than default duration
+            var effectiveDefaultDuration = options.DefaultDuration ?? TimeSpan.FromSeconds(options.DefaultDurationSeconds);
+            if (options.SlidingExpiration.Value > effectiveDefaultDuration)
+            {
+                errors.Add($"{nameof(options.SlidingExpiration)} ({options.SlidingExpiration.Value.TotalSeconds} seconds) should not exceed the default duration ({effectiveDefaultDuration.TotalSeconds} seconds). " +
+                          "Sliding expiration should be less than or equal to the absolute expiration.");
+            }
+        }
+        // Validate SlidingExpirationSeconds with range check (only if SlidingExpiration is not set)
+        else if (options.SlidingExpirationSeconds.HasValue)
         {
             if (options.SlidingExpirationSeconds.Value <= 0)
             {
@@ -79,9 +136,12 @@ internal sealed class PageCacheOptionsValidator : IValidateOptions<PageCacheOpti
             }
 
             // Validate sliding expiration is not greater than default duration
-            if (options.SlidingExpirationSeconds.Value > options.DefaultDurationSeconds)
+            var effectiveDefaultDurationSeconds = options.DefaultDuration.HasValue
+                ? (int)options.DefaultDuration.Value.TotalSeconds
+                : options.DefaultDurationSeconds;
+            if (options.SlidingExpirationSeconds.Value > effectiveDefaultDurationSeconds)
             {
-                errors.Add($"{nameof(options.SlidingExpirationSeconds)} ({options.SlidingExpirationSeconds.Value}) should not exceed {nameof(options.DefaultDurationSeconds)} ({options.DefaultDurationSeconds}). " +
+                errors.Add($"{nameof(options.SlidingExpirationSeconds)} ({options.SlidingExpirationSeconds.Value}) should not exceed the default duration ({effectiveDefaultDurationSeconds} seconds). " +
                           "Sliding expiration should be less than or equal to the absolute expiration.");
             }
         }
