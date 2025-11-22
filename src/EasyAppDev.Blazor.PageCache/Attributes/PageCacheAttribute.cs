@@ -13,16 +13,12 @@ namespace EasyAppDev.Blazor.PageCache.Attributes;
 /// [PageCache(Duration = 3600)]
 /// @page "/features"
 ///
-/// // Custom duration using TimeSpan (1 hour)
-/// [PageCache(CacheDuration = TimeSpan.FromHours(1))]
-/// @page "/products"
-///
 /// // Vary by query parameters
-/// [PageCache(CacheDuration = TimeSpan.FromMinutes(30), VaryByQueryKeys = new[] { "page", "category" })]
+/// [PageCache(Duration = 1800, VaryByQueryKeys = new[] { "page", "category" })]
 /// @page "/blog"
 ///
 /// // With tags for grouped invalidation
-/// [PageCache(CacheDuration = TimeSpan.FromHours(1), Tags = new[] { "products", "catalog" })]
+/// [PageCache(Duration = 3600, Tags = new[] { "products", "catalog" })]
 /// @page "/catalog"
 /// </code>
 /// </example>
@@ -33,17 +29,22 @@ public sealed class PageCacheAttribute : Attribute
     /// Gets or sets the cache duration in seconds.
     /// If not specified, uses the default from <see cref="Configuration.PageCacheOptions.DefaultDurationSeconds"/>.
     /// </summary>
-    /// <remarks>
-    /// Cannot be used together with <see cref="CacheDuration"/>. Use either Duration (seconds) or CacheDuration (TimeSpan).
-    /// </remarks>
     public int Duration { get; set; }
 
     /// <summary>
-    /// Gets or sets the cache duration as a TimeSpan.
+    /// Gets or sets the cache duration as a TimeSpan (used programmatically, not in attribute syntax).
     /// If not specified, uses the default from <see cref="Configuration.PageCacheOptions.DefaultDuration"/> or <see cref="Configuration.PageCacheOptions.DefaultDurationSeconds"/>.
     /// </summary>
     /// <remarks>
-    /// Cannot be used together with <see cref="Duration"/>. Use either Duration (seconds) or CacheDuration (TimeSpan).
+    /// <para>
+    /// NOTE: This property cannot be set directly in attribute syntax because C# attributes
+    /// only support compile-time constants. TimeSpan.FromHours(1) is a method call and not allowed.
+    /// </para>
+    /// <para>
+    /// This property is primarily used by the caching middleware internally when it processes
+    /// configuration from <see cref="Configuration.PageCacheOptions"/> which does support TimeSpan values.
+    /// In attributes, use the Duration property with seconds instead: [PageCache(Duration = 3600)]
+    /// </para>
     /// </remarks>
     public TimeSpan? CacheDuration { get; set; }
 
