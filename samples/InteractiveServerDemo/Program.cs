@@ -7,12 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add page caching with configuration optimized for interactive server scenarios
+// Add page caching with custom configuration
 builder.Services.AddPageCache(options =>
 {
     options.DefaultDurationSeconds = 300; // 5 minutes default cache duration
     options.EnableStatistics = true; // Track cache hit/miss statistics
-    options.CompressCachedContent = false; // Disable compression for demo
+    options.CompressCachedContent = false; // Disable compression for demo clarity
+    options.VaryByCulture = true; // Vary cache by culture (default)
 
     // Security options
     // NOTE: HTML validation is disabled for Blazor apps because framework <script> tags are always present and safe
@@ -20,11 +21,11 @@ builder.Services.AddPageCache(options =>
     options.Security.EnableHtmlValidation = false; // Disable for Blazor (framework scripts are safe)
 
     // Rate limiting - relaxed for demo/testing purposes
-    options.Security.EnableRateLimiting = true; // Prevent abuse
+    options.Security.EnableRateLimiting = true; // Rate limiting enabled
     options.Security.RateLimitMaxAttempts = 1000; // Allow 1000 requests per window (relaxed for demo)
     options.Security.RateLimitWindowSeconds = 60; // 60 second window
 
-    options.Security.ExposeDebugHeaders = true; // Enable X-Page-Cache headers for testing
+    options.Security.ExposeDebugHeaders = true; // Enable X-Page-Cache headers for demo
 });
 
 var app = builder.Build();
